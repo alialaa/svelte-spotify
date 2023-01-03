@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Skull } from 'lucide-svelte';
+	import { Button } from '$components';
 </script>
 
-<Skull />
-<a href="/api/auth/login">Login</a>
+<Button element="a" variant="outline" href="dw">Login</Button>
+<Button element="button" href="dewd">Login</Button>
