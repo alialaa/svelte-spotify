@@ -1,10 +1,13 @@
 <script>
+	import { browser } from '$app/environment';
 	import { Navigation } from '$components';
 </script>
 
 <div class="content">
 	<div class="left">
-		<Navigation desktop={false} />
+		{#if browser}
+			<Navigation desktop={false} />
+		{/if}
 	</div>
 	<div class="right">Right</div>
 </div>

@@ -30,7 +30,7 @@
 			<div
 				class="topbar-bg"
 				style:background-color="var(--header-color)"
-				style:opacity={headerOpacity}
+				style:opacity={`${headerOpacity}`}
 			/>
 			<Header />
 		</div>
