@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Home, Search, ListMusic, type Icon } from 'lucide-svelte';
+	import { Home, Search, ListMusic, Menu, type Icon } from 'lucide-svelte';
+	import { IconButton } from '$components';
 	import { tick, type ComponentType } from 'svelte';
 	import logo from '$assets/Spotify_Logo_RGB_White.png';
 	import { page } from '$app/stores';
@@ -91,6 +92,7 @@
 	{/if}
 	<nav aria-label="Main">
 		{#if !desktop}
+			<IconButton icon={Menu} label="Open menu" />
 			<button bind:this={openMenuButton} on:click={openMenu} aria-expanded={isOpen}>Open</button>
 		{/if}
 		<div
