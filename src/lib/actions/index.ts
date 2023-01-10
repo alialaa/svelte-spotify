@@ -1,1 +1,1 @@
-export { default as tippy } from './tippy';
+export { default as tippy } from './tippy/tippy';
