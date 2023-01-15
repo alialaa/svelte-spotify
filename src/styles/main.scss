@@ -119,6 +119,9 @@ a {
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 20px;
+	.card {
+		height: 100%;
+	}
 	@include breakpoint.up('sm') {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
@@ -127,5 +130,14 @@ a {
 	}
 	@include breakpoint.up('xl') {
 		grid-template-columns: repeat(6, minmax(0, 1fr));
+	}
+}
+
+@for $i from 1 through 3 {
+	.truncate-#{$i} {
+		display: -webkit-box;
+		-webkit-line-clamp: $i;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 }
