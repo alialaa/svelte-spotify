@@ -16,7 +16,8 @@ const config = {
 		alias: {
 			$components: 'src/lib/components',
 			$assets: 'src/assets',
-			$actions: 'src/lib/actions'
+			$actions: 'src/lib/actions',
+			$helpers: 'src/lib/helpers'
 		}
 	}
 };
