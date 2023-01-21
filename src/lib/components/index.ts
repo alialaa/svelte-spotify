@@ -6,3 +6,4 @@ export { default as IconButton } from './IconButton.svelte';
 export { default as Card } from './Card.svelte';
 export { default as ItemPage } from './ItemPage.svelte';
 export { default as TrackList } from './TrackList.svelte';
+export { default as Player } from './Player.svelte';
