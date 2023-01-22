@@ -120,6 +120,11 @@
 					width: 100%;
 					text-align: left;
 					font-size: functions.toRem(14);
+					border-radius: 0;
+					font-weight: 400;
+					&:hover {
+						background-image: none;
+					}
 				}
 			}
 		}
