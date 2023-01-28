@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { applyAction, enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import { Button, ItemPage } from '$components';
 	import TrackList from '$components/TrackList.svelte';
@@ -9,6 +10,8 @@
 	export let form: ActionData;
 
 	let isLoading = false;
+	let isLoadingFollow = false;
+	let followButton: Button<'button'>;
 
 	$: color = data.color;
 	$: playlist = data.playlist;
@@ -64,8 +67,25 @@
 				class="follow-form"
 				method="POST"
 				action={`?/${isFollowing ? 'unFollowPlaylist' : 'followPlaylist'}`}
+				use:enhance={() => {
+					isLoadingFollow = true;
+					return async ({ result }) => {
+						isLoadingFollow = false;
+						await applyAction(result);
+						followButton.focus();
+						if (result.type === 'success') {
+							isFollowing = !isFollowing;
+						}
+					};
+				}}
 			>
-				<Button element="button" type="submit" variant="outline">
+				<Button
+					bind:this={followButton}
+					element="button"
+					type="submit"
+					variant="outline"
+					disabled={isLoadingFollow}
+				>
 					<Heart aria-hidden focusable="false" fill={isFollowing ? 'var(--text-color)' : 'none'} />
 					{isFollowing ? 'Unfollow' : 'Follow'}
 					<span class="visually-hidden">{playlist.name} playlist</span>
