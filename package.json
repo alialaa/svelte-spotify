@@ -38,6 +38,7 @@
 	"type": "module",
 	"dependencies": {
 		"@fontsource/metropolis": "^4.5.3",
+		"@types/nprogress": "^0.2.0",
 		"@types/spotify-api": "^0.0.19",
 		"@unsass/breakpoint": "^2.2.0",
 		"lucide-svelte": "^0.104.0",

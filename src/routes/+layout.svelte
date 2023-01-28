@@ -8,6 +8,7 @@
 	import '../styles/main.scss';
 	import type { LayoutData } from './$types';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { toasts } from '$stores';
 
 	NProgress.configure({ showSpinner: false });
 
