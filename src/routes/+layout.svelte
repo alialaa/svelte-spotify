@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Navigation, Header } from '$components';
+	import { Navigation, Header, Toasts } from '$components';
 	import { page } from '$app/stores';
 	import NProgress from 'nprogress';
 	import { hideAll } from 'tippy.js';
@@ -42,6 +42,8 @@
 {#if user}
 	<a href="#main-content" class="skip-link">Skip to Content</a>
 {/if}
+
+<Toasts />
 
 <div id="main">
 	{#if user}
