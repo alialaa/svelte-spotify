@@ -1,10 +1,29 @@
 <script lang="ts">
-	import { Button, Card } from '$components';
+	import { Button, Card, Pagination } from '$components';
+	import { toasts } from '$stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
+	let isLoading = false;
+
 	$: playlists = data.userPlaylists;
+
+	async function loadMoreItems() {
+		if (!playlists.next) return;
+		isLoading = true;
+		const res = await fetch(playlists.next.replace('https://api.spotify.com/v1/', '/api/spotify/'));
+		if (res.ok) {
+			const resJSON = await res.json();
+			playlists = {
+				...resJSON,
+				items: [...playlists.items, ...resJSON.items]
+			};
+		} else {
+			toasts.error('Could not load data!');
+		}
+		isLoading = false;
+	}
 </script>
 
 <div class="content">
@@ -18,6 +37,7 @@
 				<Card {item} />
 			{/each}
 		</div>
+		<Pagination paginatedList={playlists} on:loadmore={loadMoreItems} {isLoading} />
 	{:else}
 		<div class="empty">
 			<p>No Playlists Yet!</p>
