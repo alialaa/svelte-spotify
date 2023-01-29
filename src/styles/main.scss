@@ -36,6 +36,15 @@ body {
 	color: var(--text-color);
 }
 
+input {
+	border: none;
+	padding: 0 20px;
+	height: 35px;
+	border-radius: 20px;
+	font-size: functions.toRem(14);
+	color: var(--medium-gray);
+}
+
 h1,
 h2,
 h3,
