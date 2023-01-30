@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { applyAction, enhance } from '$app/forms';
-	import { invalidate } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Button, ItemPage, Modal } from '$components';
 	import PlaylistForm from '$components/PlaylistForm.svelte';
@@ -96,6 +96,7 @@
 							await applyAction(result);
 						}
 						followButton.focus();
+						invalidateAll();
 					};
 				}}
 			>
@@ -166,7 +167,8 @@
 		form={form && 'editForm' in form ? form : null}
 		on:success={() => {
 			MicroModal.close('edit-playlist-modal');
-			invalidate(`/api/spotify/playlists/${playlist.id}`);
+			// invalidate(`/api/spotify/playlists/${playlist.id}`);
+			invalidateAll();
 		}}
 	/>
 </Modal>
