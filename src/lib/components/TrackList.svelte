@@ -5,9 +5,13 @@
 	import playingGif from '$assets/playing.gif';
 	import { tippy } from '$actions';
 	import { page } from '$app/stores';
+	import { enhance } from '$app/forms';
+	import { toasts } from '$stores';
+	import { hideAll } from 'tippy.js';
 
 	let currentlyPlaying: string | null = null;
 	let isPaused: boolean = false;
+	let isAddingToPlaylist: string[] = [];
 
 	export let tracks: SpotifyApi.TrackObjectFull[] | SpotifyApi.TrackObjectSimplified[];
 	export let isOwner: boolean = false;
@@ -94,7 +98,34 @@
 					{#if userPlaylists}
 						<div class="playlists-menu" id="{track.id}-playlists-menu" style="display: none;">
 							<div class="playlists-menu-content">
-								<form method="POST" action="/playlist?/addItem&redirect={$page.url.pathname}">
+								<form
+									method="POST"
+									action="/playlist?/addItem&redirect={$page.url.pathname}"
+									use:enhance={({ cancel }) => {
+										if (isAddingToPlaylist.includes(track.id)) {
+											cancel();
+										}
+										isAddingToPlaylist = [...isAddingToPlaylist, track.id];
+										return ({ result }) => {
+											if (result.type === 'error') {
+												toasts.error(result.error.message);
+											}
+											if (result.type === 'redirect') {
+												const url = new URL(`${$page.url.origin}${result.location}`);
+												const error = url.searchParams.get('error');
+												const success = url.searchParams.get('success');
+												if (error) {
+													toasts.error(error);
+												}
+												if (success) {
+													toasts.success(success);
+													hideAll();
+												}
+											}
+											isAddingToPlaylist = isAddingToPlaylist.filter((t) => t !== track.id);
+										};
+									}}
+								>
 									<input hidden value={track.id} name="track" />
 									<div class="field">
 										<select aria-label="Playlist" name="playlist">
@@ -104,7 +135,11 @@
 										</select>
 									</div>
 									<div class="submit-button">
-										<Button element="button" type="submit">
+										<Button
+											disabled={isAddingToPlaylist.includes(track.id)}
+											element="button"
+											type="submit"
+										>
 											Add <span class="visually-hidden"> {track.name} to selected playlist.</span>
 										</Button>
 									</div>
