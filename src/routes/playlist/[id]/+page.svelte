@@ -119,7 +119,11 @@
 	</div>
 
 	{#if playlist.tracks.items.length > 0}
-		<TrackList tracks={filteredTracks} />
+		<TrackList
+			tracks={filteredTracks}
+			isOwner={data.user?.id === playlist.owner.id}
+			userPlaylists={data.userAllPlaylists?.filter((pl) => pl.owner.id === data.user?.id)}
+		/>
 		{#if tracks.next}
 			<div class="load-more">
 				<Button element="button" variant="outline" disabled={isLoading} on:click={loadMoreTracks}

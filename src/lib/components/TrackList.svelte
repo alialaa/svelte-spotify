@@ -1,13 +1,16 @@
 <script lang="ts">
 	import { Player } from '$components';
 	import { msToTime } from '$helpers';
-	import { Clock8, ListPlus } from 'lucide-svelte';
+	import { Clock8, ListPlus, ListX } from 'lucide-svelte';
 	import playingGif from '$assets/playing.gif';
+	import { tippy } from '$actions';
 
 	let currentlyPlaying: string | null = null;
 	let isPaused: boolean = false;
 
 	export let tracks: SpotifyApi.TrackObjectFull[] | SpotifyApi.TrackObjectSimplified[];
+	export let isOwner: boolean = false;
+	export let userPlaylists: SpotifyApi.PlaylistObjectSimplified[] | undefined;
 </script>
 
 <div class="tracks">
@@ -21,7 +24,7 @@
 		<div class="duration-column">
 			<Clock8 aria-hidden focusable="false" color="var(--light-gray)" />
 		</div>
-		<div class="actions-column" />
+		<div class="actions-column" class:is-owner={isOwner} />
 	</div>
 	{#each tracks as track, index}
 		<div class="row" class:is-current={currentlyPlaying === track.id}>
@@ -61,8 +64,40 @@
 			<div class="duration-column">
 				<span class="duration">{msToTime(track.duration_ms)}</span>
 			</div>
-			<div class="actions-column">
-				<ListPlus aria-hidden focusable="false" />
+			<div class="actions-column" class:is-owner={isOwner}>
+				{#if isOwner}
+					<ListX aria-hidden focusable="false" />
+				{:else}
+					<button
+						title="Add {track.name} to a playlist"
+						aria-label="Add {track.name} to a playlist"
+						class="add-pl-button"
+						disabled={!userPlaylists}
+						use:tippy={{
+							content: document.getElementById(`${track.id}-playlists-menu`) || undefined,
+							allowHTML: true,
+							trigger: 'click',
+							interactive: true,
+							theme: 'menu',
+							placement: 'bottom-end',
+							onMount: () => {
+								const template = document.getElementById(`${track.id}-playlists-menu`);
+								if (template) {
+									template.style.display = 'block';
+								}
+							}
+						}}
+					>
+						<ListPlus aria-hidden focusable="false" />
+					</button>
+					{#if userPlaylists}
+						<div class="playlists-menu" id="{track.id}-playlists-menu" style="display: none;">
+							<div class="playlists-menu-content">
+								{track.name}
+							</div>
+						</div>
+					{/if}
+				{/if}
 			</div>
 		</div>
 	{/each}
