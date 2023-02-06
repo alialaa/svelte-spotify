@@ -4,7 +4,7 @@
 	import { Clock8, ListPlus, ListX } from 'lucide-svelte';
 	import playingGif from '$assets/playing.gif';
 	import { tippy } from '$actions';
-	import { element } from 'svelte/internal';
+	import { page } from '$app/stores';
 
 	let currentlyPlaying: string | null = null;
 	let isPaused: boolean = false;
@@ -94,8 +94,8 @@
 					{#if userPlaylists}
 						<div class="playlists-menu" id="{track.id}-playlists-menu" style="display: none;">
 							<div class="playlists-menu-content">
-								<form method="POST">
-									<input hidden value={track.id} />
+								<form method="POST" action="/playlist?/addItem&redirect={$page.url.pathname}">
+									<input hidden value={track.id} name="track" />
 									<div class="field">
 										<select aria-label="Playlist" name="playlist">
 											{#each userPlaylists as playlist}
