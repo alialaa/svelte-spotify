@@ -52,7 +52,7 @@
 					{/each}
 				</div>
 				<div class="view-all-button">
-					<Button element="a" variant="outline" href="/profile/artists"
+					<Button element="a" variant="outline" href="/profile/following"
 						>View All <span class="visually-hidden">artists that you are following</span></Button
 					>
 				</div>
