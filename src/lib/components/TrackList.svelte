@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Player } from '$components';
-	import { msToTime } from '$helpers';
+	import { getGridPosition, gridNavigation, msToTime } from '$helpers';
 	import { Clock8, ListPlus, ListX } from 'lucide-svelte';
 	import playingGif from '$assets/playing.gif';
 	import { tippy } from '$actions';
@@ -9,33 +9,116 @@
 	import { toasts } from '$stores';
 	import { hideAll } from 'tippy.js';
 	import { invalidate } from '$app/navigation';
+	import { onMount, tick } from 'svelte';
+
+	export let tracks: SpotifyApi.TrackObjectFull[] | SpotifyApi.TrackObjectSimplified[];
+	export let isOwner: boolean = false;
+	export let userPlaylists: SpotifyApi.PlaylistObjectSimplified[] | undefined;
+	export let title: string;
+	export let total: number;
 
 	let currentlyPlaying: string | null = null;
 	let isPaused: boolean = false;
 	let isAddingToPlaylist: string[] = [];
 	let isRemovingFromPlaylist: string[] = [];
 
-	export let tracks: SpotifyApi.TrackObjectFull[] | SpotifyApi.TrackObjectSimplified[];
-	export let isOwner: boolean = false;
-	export let userPlaylists: SpotifyApi.PlaylistObjectSimplified[] | undefined;
+	let js = false;
+	let prevTrackLength = tracks.length;
+	let gridRef: HTMLElement | null = null;
+	let currentPosition: [number, number, number] | null = null;
+
+	$: gridNavigate = gridNavigation(gridRef, currentPosition, tracks.length);
+	$: {
+		// if more tracks are loaded, focus back on tracks
+		if (prevTrackLength < tracks.length) {
+			// focus on first item in the new page
+			currentPosition = [prevTrackLength + 2, 1, 1];
+		}
+		prevTrackLength = tracks.length;
+	}
+
+	function handleKeyDown(e: KeyboardEvent) {
+		const newPosition = getGridPosition(e, gridNavigate, currentPosition);
+		if (newPosition) currentPosition = newPosition;
+	}
+	$: getSelectableTabIndex = (row: number, column: number, index: number) => {
+		if (!js) return undefined;
+		if (
+			currentPosition &&
+			currentPosition[0] === row &&
+			currentPosition[1] === column &&
+			currentPosition[2] === index
+		) {
+			return 0;
+		}
+		return -1;
+	};
+	$: {
+		const focusCurrentSelectable = async () => {
+			if (currentPosition && gridRef) {
+				await tick();
+				const column = gridRef.querySelector(
+					`[data-row="${currentPosition[0]}"][data-column="${currentPosition[1]}"]`
+				);
+				const selectables: NodeListOf<HTMLAnchorElement | HTMLButtonElement> | undefined =
+					column?.querySelectorAll('a:not(.not-selectable),button:not(.not-selectable)');
+				console.log(selectables);
+				if (selectables) {
+					selectables[currentPosition[2] - 1].focus();
+				}
+			}
+		};
+		focusCurrentSelectable();
+	}
+
+	onMount(() => {
+		js = true;
+	});
 </script>
 
-<div class="tracks">
-	<div class="row header">
-		<div class="number-column">
+<div
+	class="tracks"
+	role="grid"
+	aria-label={title}
+	aria-rowcount={total + 1}
+	aria-colcount={5}
+	tabindex={js ? 0 : undefined}
+	bind:this={gridRef}
+	on:keydown={handleKeyDown}
+>
+	<div class="row header" role="row" aria-rowindex={1}>
+		<div class="number-column" role="columnheader" aria-colindex={1} data-row={1}>
 			<span class="number">#</span>
 		</div>
-		<div class="info-column">
+		<div class="info-column" role="columnheader" aria-colindex={2} data-row={1}>
 			<span class="track-title">Title</span>
 		</div>
-		<div class="duration-column">
+		<div class="duration-column" role="columnheader" aria-colindex={3} data-row={1}>
 			<Clock8 aria-hidden focusable="false" color="var(--light-gray)" />
 		</div>
-		<div class="actions-column" class:is-owner={isOwner} />
+		<div
+			class="actions-column"
+			class:is-owner={isOwner}
+			role="columnheader"
+			aria-colindex={4}
+			data-row={1}
+		/>
 	</div>
 	{#each tracks as track, index}
-		<div class="row" class:is-current={currentlyPlaying === track.id}>
-			<div class="number-column">
+		<div
+			class="row"
+			class:is-current={currentlyPlaying === track.id}
+			role="row"
+			aria-rowindex={index + 2}
+			aria-selected={currentPosition && currentPosition[0] === index + 2 ? 'true' : 'false'}
+		>
+			<div
+				class="number-column"
+				role="gridcell"
+				aria-colindex={1}
+				data-column={1}
+				data-row={index + 2}
+			>
 				{#if currentlyPlaying === track.id && !isPaused}
 					<img class="playing-gif" src={playingGif} alt="" />
 				{:else}
@@ -43,6 +126,7 @@
 				{/if}
 				<div class="player">
 					<Player
+						tabIndex={getSelectableTabIndex(index + 2, 1, 1)}
 						{track}
 						on:play={(e) => {
 							currentlyPlaying = e.detail.track.id;
@@ -54,7 +138,13 @@
 					/>
 				</div>
 			</div>
-			<div class="info-column">
+			<div
+				class="info-column"
+				role="gridcell"
+				aria-colindex={2}
+				data-column={2}
+				data-row={index + 2}
+			>
 				<div class="track-title">
 					<h4>{track.name}</h4>
 					{#if track.explicit}
@@ -63,15 +153,30 @@
 				</div>
 				<p class="artists">
 					{#each track.artists as artist, artistIndex}
-						<a href="/artist/{artist.id}">{artist.name}</a
+						<a
+							href="/artist/{artist.id}"
+							tabindex={getSelectableTabIndex(index + 2, 2, artistIndex + 1)}>{artist.name}</a
 						>{#if artistIndex < track.artists.length - 1}{', '}{/if}
 					{/each}
 				</p>
 			</div>
-			<div class="duration-column">
+			<div
+				class="duration-column"
+				role="gridcell"
+				aria-colindex={3}
+				data-column={3}
+				data-row={index + 2}
+			>
 				<span class="duration">{msToTime(track.duration_ms)}</span>
 			</div>
-			<div class="actions-column" class:is-owner={isOwner}>
+			<div
+				class="actions-column"
+				class:is-owner={isOwner}
+				role="gridcell"
+				aria-colindex={4}
+				data-column={4}
+				data-row={index + 2}
+			>
 				{#if isOwner}
 					<form
 						method="POST"
@@ -103,6 +208,7 @@
 					>
 						<input hidden name="track" value={track.id} />
 						<button
+							tabindex={getSelectableTabIndex(index + 2, 4, 1)}
 							type="submit"
 							title="Remove {track.name} from playlist"
 							aria-label="Remove {track.name} from playlist"
@@ -114,6 +220,7 @@
 					</form>
 				{:else}
 					<button
+						tabindex={getSelectableTabIndex(index + 2, 4, 1)}
 						title="Add {track.name} to a playlist"
 						aria-label="Add {track.name} to a playlist"
 						class="add-pl-button"
@@ -179,6 +286,7 @@
 											disabled={isAddingToPlaylist.includes(track.id)}
 											element="button"
 											type="submit"
+											className="not-selectable"
 										>
 											Add <span class="visually-hidden"> {track.name} to selected playlist.</span>
 										</Button>
@@ -195,11 +303,18 @@
 
 <style lang="scss">
 	.tracks {
+		&:focus {
+			outline: 2px solid var(--accent-color);
+		}
 		.row {
 			display: flex;
 			align-items: center;
 			padding: 7px 5px;
 			border-radius: 4px;
+			&[aria-selected='true'] {
+				background-color: rgba(255, 255, 255, 0.3);
+				outline: 1px solid #fff;
+			}
 			@include breakpoint.down('md') {
 				:global(.no-js) & {
 					flex-direction: column;
@@ -235,7 +350,11 @@
 				}
 			}
 			&:not(.header) {
-				&:hover {
+				&:not([aria-selected='true']):hover {
+					background-color: rgba(255, 255, 255, 0.05);
+				}
+				&:hover,
+				&[aria-selected='true'] {
 					background-color: rgba(255, 255, 255, 0.05);
 					.number-column {
 						.player {

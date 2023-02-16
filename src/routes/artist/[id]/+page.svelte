@@ -33,6 +33,8 @@
 				<TrackList
 					tracks={topTracks.tracks}
 					userPlaylists={data.userAllPlaylists?.filter((pl) => pl.owner.id === data.user?.id)}
+					total={topTracks.tracks.length}
+					title={artist.name}
 				/>
 			</div>
 		{/if}
