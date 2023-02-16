@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { LogoutButton, Navigation, SearchForm } from '$components';
+	import { LogoutButton, Navigation, SearchForm, HeaderNav } from '$components';
 	import { page } from '$app/stores';
 	import { ChevronDown, ExternalLink } from 'lucide-svelte';
 	import { tippy } from '$actions';
@@ -15,6 +15,8 @@
 		{#if browser}
 			<Navigation desktop={false} {userAllPlaylists} />
 		{/if}
+
+		<HeaderNav />
 
 		{#if $page.url.pathname.startsWith('/search')}
 			<div class="search-form">
@@ -67,9 +69,13 @@
 
 <style lang="scss">
 	.search-form {
+		margin-left: 20px;
 		display: none;
 		@include breakpoint.up('lg') {
 			display: block;
+		}
+		:global(html.no-js) & {
+			margin-left: 0px;
 		}
 	}
 	.content {
@@ -81,6 +87,10 @@
 			@include breakpoint.down('md') {
 				justify-content: flex-start;
 			}
+		}
+		.left {
+			display: flex;
+			align-items: center;
 		}
 	}
 	.profile-button {
